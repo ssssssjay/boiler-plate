@@ -4,6 +4,8 @@ const saltRounds = 10;
 // Salt를 이용해서 비밀번호를 암호화 해야 해요
 // 그럴려면 salt를 먼저 생성해야함
 // saltRounds는 salt가 몇글자인지를 말하는거임
+const jwt = require('jsonwebtoken');
+// var token = jwt.sign({ foo: 'bar' }, 'shhhhh');
 
 const userSchema = mongoose.Schema({
   name: {
@@ -52,8 +54,31 @@ userSchema.pre('save', function(next) {
         next()
       });
     });
+  } else { // 이거는 비번바꾸기가 아닌 다른걸 했을때 그냥 나가게 해주는 처리
+    next()
   }
 })
+
+userSchema.methods.comparePassword = function(plainPassword, cb) {
+  // plainpassword 123456789 암호화된거는 긴거 블라블라
+  bcrypt.compare(plainPassword, this.password, function(err, isMatch) {
+    if (err) return cb(err)
+    cb(null, isMatch)
+  })
+}
+
+userSchema.methods.generateToken = function(cb) {
+  let user = this;
+  // jsonwebtoken을 이용해 토큰만들기
+  let token = jwt.sign(user._id.toHexString(), 'secretToken')
+
+  user.token = token
+  user.save(function(err, user) {
+    if(err) return cb(err)
+    cb(null, user)
+  })
+}
+
 
 const User = mongoose.model('User', userSchema);
 
