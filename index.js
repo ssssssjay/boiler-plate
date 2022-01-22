@@ -28,6 +28,7 @@ app.get('/', (req, res, next) => {res.send('우히히히히히')});
 app.post('/register', (req, res, next) => {
   // 회원가입할때필요한 정보들을 클라이언트에서 가져오면 그것들을 디비에 넣어준다
   const user = new User(req.body)
+  
   // 몽고디비에서 오는 메소드임
   user.save((err, userInfo) => {
     if(err) return res.json({ success: false, err})
