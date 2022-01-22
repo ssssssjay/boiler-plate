@@ -3,6 +3,9 @@ const express = require('express');
 const app = express();
 const port = 8080;
 const bodyParser = require('body-parser'); // 인스톨은 안해도 선언은 해야함
+
+const config = require('./config/key');
+
 const {User} = require('./models/User');
 
 // application/x-www-form-urlencoded 요런애를 분석하는
@@ -12,7 +15,7 @@ app.use(bodyParser.json());
 
 // 몽고디비를 편하게 쓰게해주는 몽구스! 설치필요
 const mongoose = require('mongoose');
-mongoose.connect('mongodb+srv://sungjae:1234@cluster0.qveyb.mongodb.net/myFirstDatabase?retryWrites=true&w=majority', {
+mongoose.connect(config.mongoURI, {
 
 }).then(() => console.log('mongoDB Connected!'))
   .catch(err => console.log(err));
