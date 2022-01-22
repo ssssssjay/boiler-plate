@@ -4,7 +4,7 @@ const app = express();
 const port = 8080;
 const bodyParser = require('body-parser'); // 인스톨은 안해도 선언은 해야함
 const cookieParser = require('cookie-parser');
-
+const {auth} = require('./middleware/auth');
 const config = require('./config/key');
 
 const {User} = require('./models/User');
@@ -84,6 +84,20 @@ app.get('/api/users/auth', auth, (req, res) => {
     role: req.user.role,
     image: req.user.image
   })
+})
+
+app.get('/api/users/logout', auth, (req, res) => {
+
+  User.findOneAndUpdate(
+    {_id: req.user._id},
+    {token: ''},
+    (err, user) => {
+      if (err) return res.json({success: false, err});
+      return res.status(200).send({
+        success: true
+      })
+    }
+  )
 })
 
 app.listen(port, () => console.log(`${port} listen`));
