@@ -18,6 +18,8 @@ app.use(cookieParser());
 // 몽고디비를 편하게 쓰게해주는 몽구스! 설치필요
 const mongoose = require('mongoose');
 const { append } = require('express/lib/response');
+const req = require('express/lib/request');
+const res = require('express/lib/response');
 mongoose.connect(config.mongoURI, {
 
 }).then(() => console.log('mongoDB Connected!'))
@@ -28,7 +30,7 @@ mongoose.connect(config.mongoURI, {
 app.get('/', (req, res, next) => {res.send('우히히히히히')});
 
 // 회원가입 라우트
-app.post('/register', (req, res, next) => {
+app.post('/api/users/register', (req, res, next) => {
   // 회원가입할때필요한 정보들을 클라이언트에서 가져오면 그것들을 디비에 넣어준다
   const user = new User(req.body)
   
@@ -42,7 +44,7 @@ app.post('/register', (req, res, next) => {
 })
 
 // 로그인 라우트
-app.post('/login', (req, res, next) => {
+app.post('/api/users/login', (req, res, next) => {
   // 요청된 이메일을 디비에서 찾는다.
   User.findOne({ email: req.body.email }, (err, user) => {
     if(!user) {
@@ -66,6 +68,21 @@ app.post('/login', (req, res, next) => {
             .json({ loginSuccess: true, userId: user._id})
       })
     })
+  })
+})
+// role 1 admin role 0 일반유저
+// 유저인증 라우트? 이 회원이 특정페이지(게시물)에 접근가능한 유저인지 파악
+app.get('/api/users/auth', auth, (req, res) => {
+
+  // 여기까지 미들웨어를 통과해왔다는 얘기는 유저인증이 트루(잘되었다 토큰도있고 그게 유저랑도 일치하고 안심할 유저라는 뜻)
+  res.status(200).json({
+    _id: req.user._id,
+    isAdmin: req.user.role === 0 ? false : true,
+    email: req.user.email,
+    name: req.user.name,
+    lastname: req.user.lastname,
+    role: req.user.role,
+    image: req.user.image
   })
 })
 

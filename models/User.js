@@ -58,7 +58,7 @@ userSchema.pre('save', function(next) {
     next()
   }
 })
-
+// 비번 비교
 userSchema.methods.comparePassword = function(plainPassword, cb) {
   // plainpassword 123456789 암호화된거는 긴거 블라블라
   bcrypt.compare(plainPassword, this.password, function(err, isMatch) {
@@ -66,7 +66,7 @@ userSchema.methods.comparePassword = function(plainPassword, cb) {
     cb(null, isMatch)
   })
 }
-
+// 토큰생성
 userSchema.methods.generateToken = function(cb) {
   let user = this;
   // jsonwebtoken을 이용해 토큰만들기
@@ -78,7 +78,21 @@ userSchema.methods.generateToken = function(cb) {
     cb(null, user)
   })
 }
+// 토큰으로 비교
+userSchema.statics.findByToken = function(token, cb) {
+  let user = this;
 
+  // user._id + '' = token
+  // token을 decode한다
+  jwt.verify(token, 'secretToken', function(err, decoded) {
+    // 유저아이디를 이용해서 찾은 다음에 클라이언트에서 가져온 토큰과 디비에 저장된 토큰이 같은지 확인
+    
+    user.findOne({"_id": decoded, "token": token}, function(err, user) {
+      if(err) return cb(err);
+      cb(null, user)
+    })
+  })
+}
 
 const User = mongoose.model('User', userSchema);
 
